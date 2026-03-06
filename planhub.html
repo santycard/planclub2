@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Bar Gold</title>
+    <style>
+        body {
+            background: #0f0f0f; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+        }
+
+        .phone-container {
+            width: 360px;
+            height: 740px;
+            background-color: #000;
+            background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPAQfVI2kvW80RPcwR0c6RQdtUNe45hUoWIg&s");
+            background-size: cover;
+            background-position: center;
+            border: 10px solid #222;
+            border-radius: 40px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .back-home-btn {
+            position: absolute;
+            top: 25px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(145deg, #ffd700, #b8860b);
+            border: none;
+            border-radius: 50%;
+            color: black;
+            font-size: 20px;
+            font-weight: bold;
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        header {
+            padding: 30px 20px 10px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            color: #ffd700;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: 90px;
+        }
+
+        .section-title {
+            margin: 15px 0;
+            font-weight: bold;
+            border-left: 4px solid #ffd700;
+            padding-left: 10px;
+            text-transform: uppercase;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 215, 0, 0.1);
+        }
+
+        .card img { width: 100%; height: 90px; object-fit: contain; }
+
+        .price { color: #ffd700; font-weight: bold; margin: 5px 0; }
+
+        .add-btn {
+            background: #ffd700; border: none; border-radius: 50%;
+            width: 32px; height: 32px; font-weight: bold; cursor: pointer;
+        }
+
+        #pedido { display: none; }
+
+        .pedido-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            background: rgba(255,255,255,0.05);
+            padding: 12px;
+            border-radius: 15px;
+        }
+
+        .qty button { background: #ffd700; border: none; width: 28px; height: 28px; border-radius: 5px; font-weight: bold; }
+
+        .total {
+            text-align: right; margin-top: 20px; font-size: 22px; font-weight: bold;
+            color: #ffd700; border-top: 1px solid rgba(255,215,0,0.3); padding-top: 15px;
+        }
+
+        /* INTERFAZ DE GRACIAS Y CONFIRMACIÓN */
+        #overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #overlay h2 { color: #ffd700; font-size: 28px; }
+        #overlay p { font-size: 18px; margin-bottom: 20px; }
+
+        .modal-btn {
+            padding: 12px 25px; border-radius: 10px; border: none;
+            font-weight: bold; cursor: pointer; margin: 5px; width: 120px;
+        }
+
+        .btn-confirm { background: #ffd700; color: black; }
+        .btn-cancel { background: #333; color: white; }
+
+        .nav {
+            position: absolute; bottom: 0; width: 100%;
+            background: rgba(0,0,0,0.9); padding: 20px 0;
+            text-align: center; border-top: 1px solid #222;
+        }
+
+        .nav button {
+            background: linear-gradient(145deg, #ffd700, #daa520);
+            border: none; padding: 12px 40px; border-radius: 30px;
+            font-weight: bold; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="phone-container">
+    <button class="back-home-btn" id="btnBack" onclick="regresar()">←</button>
+
+    <div id="overlay">
+        <div id="modal-confirmacion">
+            <h2>¿Confirmar pedido?</h2>
+            <p>Tu orden será procesada de inmediato.</p>
+            <button class="modal-btn btn-confirm" onclick="procesarPedido()">SÍ</button>
+            <button class="modal-btn btn-cancel" onclick="regresar()">NO</button>
+        </div>
+        <div id="modal-gracias" style="display:none;">
+            <div style="font-size: 60px;">🏆</div>
+            <h2>¡GRACIAS POR TU PEDIDO!</h2>
+            <p>En breve estaremos contigo.</p>
+            <button class="modal-btn btn-confirm" onclick="reiniciarApp()" style="width: 200px;">NUEVO PEDIDO</button>
+        </div>
+    </div>
+
+    <div class="content" id="catalogo-screen">
+        <header>CATÁLOGO</header>
+        <div class="section-title">BEBIDAS</div>
+        <div class="products">
+            <div class="card">
+                <img src="https://cdn.mos.cms.futurecdn.net/v2/t:0,l:218,cw:563,ch:563,q:80,w:563/wn2NRMm5iJBXeZPBrefnhK.jpg">
+                <p>Bacardi</p><p class="price">$70.000</p>
+                <button class="add-btn" onclick="agregar('Bacardi',70000)">+</button>
+            </div>
+            <div class="card">
+                <img src="https://i.pinimg.com/474x/82/d8/48/82d84883fb32e2e4c31c7760830ee0f1.jpg">
+                <p>Coronita</p><p class="price">$5.000</p>
+                <button class="add-btn" onclick="agregar('Coronita',5000)">+</button>
+            </div>
+            <div class="card">
+                <img src="https://pbs.twimg.com/profile_images/472153934015254529/XOrYqyI2_400x400.jpeg">
+                <p>Néctar</p><p class="price">$50.000</p>
+                <button class="add-btn" onclick="agregar('Néctar',50000)">+</button>
+            </div>
+            <div class="card">
+                <img src="https://images.seeklogo.com/logo-png/18/1/cerveza-poker-logo-png_seeklogo-184736.png">
+                <p>Poker</p><p class="price">$3.500</p>
+                <button class="add-btn" onclick="agregar('Poker',3500)">+</button>
+            </div>
+            <div class="card">
+                <img src="https://imgproxy.domestika.org/unsafe/rs:fill/plain/src://content-items/002/864/382/Aguila_logo-original.png?1552905177">
+                <p>aguila</p><p class="price">$3.500</p>
+                <button class="add-btn" onclick="agregar('Poker',3500)">+</button>
+            </div>
+            <div class="card">
+                <img src="https://logowik.com/content/uploads/images/powerade374.logowik.com.webp">
+                <p>powerade</p><p class="price">$5.000</p>
+                <button class="add-btn" onclick="agregar('Poker',5.000)">+</button>
+            </div>
+            <div class="card">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0ro27SpW_X4XaTzLFQB2BWwNb80we3Kj9Ng&s">
+                <p>aguardiente amarillo</p><p class="price">$50.000</p>
+                <button class="add-btn" onclick="agregar('aguardiente amarillo',50000)">+</button>
+            </div>
+            <div class="card">
+                <img src="https://www.ronviejodecaldasrum.com/image/5862128.1593880979000/ronviego_logo_RED_W_RED_STROKE_540X410_300_O.png">
+                <p>ron viejo de caldas</p><p class="price">$62.000</p>
+                <button class="add-btn" onclick="agregar('ron viejo de caldas',62000)">+</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="content" id="pedido">
+        <header>MI PEDIDO</header>
+        <div id="listaPedido"></div>
+        <div class="total">TOTAL: $<span id="total">0</span></div>
+        <div class="actions" style="margin-top:20px; display:flex; gap:10px;">
+            <button class="btn-cancel" onclick="vaciarCarrito()" style="flex:1; padding:12px; border-radius:10px; border:none; cursor:pointer;">VACIAR</button>
+            <button class="btn-confirm" onclick="abrirConfirmacion()" style="flex:1; padding:12px; border-radius:10px; border:none; cursor:pointer; background:#ffd700; font-weight:bold;">CONFIRMAR</button>
+        </div>
+    </div>
+
+    <div class="nav" id="main-nav">
+        <button onclick="verPedido()">Ver Pedido (<span id="cart-count">0</span>)</button>
+    </div>
+</div>
+
+<script>
+let carrito = {};
+
+function agregar(nombre, precio) {
+    if (!carrito[nombre]) carrito[nombre] = { precio: precio, cantidad: 0 };
+    carrito[nombre].cantidad++;
+    actualizarContador();
+}
+
+function actualizarContador() {
+    let totalItems = 0;
+    for (let item in carrito) totalItems += carrito[item].cantidad;
+    document.getElementById("cart-count").innerText = totalItems;
+}
+
+function verPedido() {
+    document.getElementById("catalogo-screen").style.display = "none";
+    document.getElementById("main-nav").style.display = "none";
+    document.getElementById("pedido").style.display = "block";
+    document.getElementById("btnBack").style.display = "flex";
+    renderPedido();
+}
+
+function regresar() {
+    document.getElementById("catalogo-screen").style.display = "block";
+    document.getElementById("main-nav").style.display = "block";
+    document.getElementById("pedido").style.display = "none";
+    document.getElementById("btnBack").style.display = "none";
+    document.getElementById("overlay").style.display = "none";
+}
+
+function renderPedido() {
+    let lista = document.getElementById("listaPedido");
+    lista.innerHTML = "";
+    let total = 0;
+    for (let item in carrito) {
+        let data = carrito[item];
+        total += data.precio * data.cantidad;
+        lista.innerHTML += `
+        <div class="pedido-item">
+            <div><strong>${item}</strong><br><span class="price">$${data.precio.toLocaleString()}</span></div>
+            <div class="qty">
+                <button onclick="cambiar('${item}',-1)">-</button>
+                <span style="margin:0 10px">${data.cantidad}</span>
+                <button onclick="cambiar('${item}',1)">+</button>
+            </div>
+        </div>`;
+    }
+    document.getElementById("total").innerText = total.toLocaleString();
+}
+
+function cambiar(nombre, valor) {
+    carrito[nombre].cantidad += valor;
+    if (carrito[nombre].cantidad <= 0) delete carrito[nombre];
+    actualizarContador();
+    renderPedido();
+}
+
+function vaciarCarrito() {
+    if(confirm("¿Deseas vaciar el carrito?")) { carrito = {}; actualizarContador(); regresar(); }
+}
+
+/* LÓGICA DE CONFIRMACIÓN */
+function abrirConfirmacion() {
+    if (Object.keys(carrito).length === 0) return alert("El carrito está vacío");
+    document.getElementById("overlay").style.display = "flex";
+    document.getElementById("modal-confirmacion").style.display = "block";
+    document.getElementById("modal-gracias").style.display = "none";
+}
+
+function procesarPedido() {
+    document.getElementById("modal-confirmacion").style.display = "none";
+    document.getElementById("modal-gracias").style.display = "block";
+    carrito = {};
+    actualizarContador();
+}
+
+function reiniciarApp() {
+    location.reload();
+}
+</script>
+
+</body>
+</html>
